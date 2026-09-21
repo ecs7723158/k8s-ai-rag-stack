@@ -1,0 +1,15 @@
+# High-Throughput Production Serving Configuration for vLLM on Kubernetes
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-engine-config
+  namespace: ai-serving
+data:
+  VLLM_ENGINE_ARGS: |
+    --swap-space 4
+    --kv-cache-dtype auto
+    --max-num-batched-tokens 4096
+    --max-num-seqs 256
+    --disable-log-requests
+    --distributed-executor-backend ray
+    --trust-remote-code

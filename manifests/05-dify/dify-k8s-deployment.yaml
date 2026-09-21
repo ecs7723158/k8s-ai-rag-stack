@@ -1,0 +1,69 @@
+# Dify Production Multi-Agent & RAG Orchestration Deployment on Kubernetes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-api
+  namespace: dify-system
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dify-api
+  template:
+    metadata:
+      labels:
+        app: dify-api
+    spec:
+      containers:
+        - name: api
+          image: langgenius/dify-api:0.10.0
+          env:
+            - name: MODE
+              value: "api"
+            - name: DB_HOST
+              value: "postgres.dify-system.svc.cluster.local"
+            - name: REDIS_HOST
+              value: "redis-master.dify-system.svc.cluster.local"
+            - name: VECTOR_STORE
+              value: "milvus"
+            - name: MILVUS_URI
+              value: "http://milvus-standalone.rag-system.svc.cluster.local:19530"
+            - name: RERANK_MODEL_PROVIDER
+              value: "bge-reranker-large"
+          ports:
+            - containerPort: 5001
+          resources:
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-worker
+  namespace: dify-system
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: dify-worker
+  template:
+    metadata:
+      labels:
+        app: dify-worker
+    spec:
+      containers:
+        - name: worker
+          image: langgenius/dify-api:0.10.0
+          env:
+            - name: MODE
+              value: "worker"
+            - name: DB_HOST
+              value: "postgres.dify-system.svc.cluster.local"
+            - name: REDIS_HOST
+              value: "redis-master.dify-system.svc.cluster.local"
+            - name: CELERY_CONCURRENCY
+              value: "8"

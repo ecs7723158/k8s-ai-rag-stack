@@ -1,0 +1,38 @@
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: "ray-job-lora-finetune"
+  namespace: "ai-workloads"
+  labels:
+    kueue.x-k8s.io/queue-name: "llm-training-queue"
+spec:
+  entrypoint: "python3 /app/finetune_lora.py --model meta-llama/Llama-3-8B --dataset /data/instruct.jsonl"
+  shutdownAfterJobFinishes: true
+  ttlSecondsAfterFinished: 600
+  rayClusterSpec:
+    rayVersion: "2.35.0"
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: "0.0.0.0"
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: rayproject/ray-ml:2.35.0-py310-gpu
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: "8Gi"
+    workerGroupSpecs:
+      - groupName: "gpu-workers"
+        replicas: 2
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: rayproject/ray-ml:2.35.0-py310-gpu
+                resources:
+                  limits:
+                    nvidia.com/gpu: "1"
+                    cpu: "8"
+                    memory: "32Gi"

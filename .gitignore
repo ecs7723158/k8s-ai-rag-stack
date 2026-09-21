@@ -1,0 +1,12 @@
+# .gitignore for Cloud-Native AI & RAG Stack
+.DS_Store
+*.swp
+*.pyc
+__pycache__/
+.venv/
+env/
+dist/
+build/
+*.log
+.idea/
+.vscode/

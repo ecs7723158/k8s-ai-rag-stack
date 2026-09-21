@@ -1,0 +1,22 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: "llama-3-8b-instruct"
+  namespace: "ai-serving"
+spec:
+  features: [TextGeneration]
+  owner: "llm-platform-team"
+  url: "hf://meta-llama/Meta-Llama-3-8B-Instruct"
+  engine: VLLM
+  args:
+    - --max-model-len=8192
+    - --gpu-memory-utilization=0.92
+    - --block-size=16
+    - --enable-prefix-caching
+    - --tensor-parallel-size=1
+  minReplicas: 1
+  maxReplicas: 5
+  scalingMetric:
+    type: Concurrency
+    target: 15
+  resourceProfile: "nvidia-gpu-h100:1"

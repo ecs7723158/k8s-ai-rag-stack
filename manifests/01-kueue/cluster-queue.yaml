@@ -1,0 +1,28 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: "cluster-queue-ai-team"
+spec:
+  cohort: "shared-ai-cohort"
+  queueingStrategy: BestEffortFIFO
+  preemption:
+    reclaimWithinCohort: Any
+    borrowWithinCohort:
+      policy: LowerPriority
+    withinClusterQueue: LowerPriority
+  resourceGroups:
+    - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
+      flavors:
+        - name: "nvidia-gpu-h100"
+          resources:
+            - name: "nvidia.com/gpu"
+              nominalQuota: 8
+              borrowingLimit: 16
+        - name: "default-flavor"
+          resources:
+            - name: "cpu"
+              nominalQuota: 64
+              borrowingLimit: 128
+            - name: "memory"
+              nominalQuota: 256Gi
+              borrowingLimit: 512Gi

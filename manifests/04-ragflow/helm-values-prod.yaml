@@ -1,0 +1,40 @@
+# Production Helm Values for RAGFlow on Kubernetes
+global:
+  storageClass: "premium-rwo"
+  imagePullPolicy: IfNotPresent
+
+ragflow:
+  replicaCount: 3
+  image:
+    repository: infiniflow/ragflow
+    tag: v0.14.0
+  resources:
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+    requests:
+      cpu: "4"
+      memory: "8Gi"
+  env:
+    DOC_ENGINE: "elasticsearch"
+    VECTOR_ENGINE: "milvus"
+    MILVUS_HOST: "milvus-standalone.rag-system.svc.cluster.local"
+    MILVUS_PORT: 19530
+    MINIO_ENDPOINT: "minio.rag-system.svc.cluster.local:9000"
+    DEEPDOC_OCR_WORKERS: "4"
+
+milvus:
+  enabled: true
+  cluster:
+    enabled: true
+  standalone:
+    enabled: false
+  persistence:
+    size: 200Gi
+
+minio:
+  enabled: true
+  mode: distributed
+  replicas: 4
+  persistence:
+    size: 500Gi

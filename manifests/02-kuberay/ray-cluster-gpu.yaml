@@ -1,0 +1,52 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: "ray-cluster-llm"
+  namespace: "ai-workloads"
+  labels:
+    kueue.x-k8s.io/queue-name: "llm-training-queue"
+spec:
+  rayVersion: "2.35.0"
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: "0.0.0.0"
+      num-cpus: "4"
+    template:
+      spec:
+        containers:
+          - name: ray-head
+            image: rayproject/ray-ml:2.35.0-py310-gpu
+            resources:
+              limits:
+                cpu: "4"
+                memory: "16Gi"
+              requests:
+                cpu: "2"
+                memory: "8Gi"
+            ports:
+              - containerPort: 6379
+                name: gcs
+              - containerPort: 8265
+                name: dashboard
+              - containerPort: 10001
+                name: client
+  workerGroupSpecs:
+    - groupName: "gpu-worker-group"
+      replicas: 2
+      minReplicas: 1
+      maxReplicas: 8
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+            - name: ray-worker
+              image: rayproject/ray-ml:2.35.0-py310-gpu
+              resources:
+                limits:
+                  cpu: "8"
+                  memory: "32Gi"
+                  nvidia.com/gpu: "1"
+                requests:
+                  cpu: "4"
+                  memory: "16Gi"
+                  nvidia.com/gpu: "1"
